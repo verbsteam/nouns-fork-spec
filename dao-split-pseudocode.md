@@ -53,6 +53,14 @@ function executeSplitIfFailed(proposalId):
     newDAOTreasury = deploySplitDAO(proposalId, splitCount)
     sendProRataTreasury(newDAOTreasury, splitCount, nouns.totalSupply)
 
+~~~ DEPLOY NEW DAO ~~~
+
+function deploySplitDAO(proposalId, splitCount):
+    // TODO
+
+function sendProRataTreasury(newDAOTreasury, splitCount, totalSupply):
+    // TODO
+
 ~~~ SPLIT HELPERS ~~~
 
 function backingVotesCount(proposalId):
