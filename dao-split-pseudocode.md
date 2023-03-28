@@ -141,7 +141,7 @@ function withdrawNouns(tokenIds, to):
     else:
         require msg.sender == owner
         // split can't be executed any more
-        require dao.state(proposalId) in [Canceled, Successful, Queued, Executed, Expired] ||
+        require dao.state(proposalId) in [Canceled, Executed, Expired] ||
             dao.isFailedProposalSplitExpired(proposalId)
 
     nouns.transfer(to, tokenIds)
