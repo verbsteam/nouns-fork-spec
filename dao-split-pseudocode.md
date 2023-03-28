@@ -151,10 +151,10 @@ function withdrawNouns(tokenIds, to):
 
 ```jsx
 function constructor():
-	daoCreated = block.timestamp
+    daoCreated = block.timestamp
 
 function propose(...):
-	require(tokenContract.remainingTokensToClaim() == 0 || block.timestamp > daoCreated + 1 month)
+    require(tokenContract.remainingTokensToClaim() == 0 || block.timestamp > daoCreated + 1 month)
 
 ```
 
@@ -162,18 +162,18 @@ function propose(...):
 
 ```jsx
 function constructor(descriptor, originalNounsDAO, originalNounsToken, proposalId, tokensToClaim, successfulOrFailedProposal_):
-	// save to immutables
+    // save to immutables
     remainingTokensToClaim = tokensToClaim
     successfulOrFailedProposal = successfulOrFailedProposal_
 
 function claimTokens(tokenIds[]):
-	require tokenIds in dao.splitTokenIds[successfulOrFailedProposal][proposalId][msg.sender]
+    require tokenIds in dao.splitTokenIds[successfulOrFailedProposal][proposalId][msg.sender]
 
-	for tokenId in tokenIds:
-		seeds[tokenId] = originalNounsToken.seeds[tokenId]
-		_mint(msg.sender, tokenId)
+    for tokenId in tokenIds:
+        seeds[tokenId] = originalNounsToken.seeds[tokenId]
+        _mint(msg.sender, tokenId)
 
-	remainingTokensToClaim -= tokenIds.length
+    remainingTokensToClaim -= tokenIds.length
 
 ```
 
@@ -181,20 +181,20 @@ function claimTokens(tokenIds[]):
 
 ```jsx
 constructor(daoProxy):
-	admin = daoProxy
+    admin = daoProxy
 
 function upgrade(newImplementation):
-	require msg.sender == address(this)
-	logic = newImplementation
+    require msg.sender == address(this)
+    logic = newImplementation
 
 function sendETHToNewDAO(newDAO, ethToSend):
-	require msg.sender == admin
-	sent = newDAO.send(ethToSend)
-	require sent
+    require msg.sender == admin
+    sent = newDAO.send(ethToSend)
+    require sent
 
 function sendERC20ToNewDAO(newDAO, erc20, tokensToSend):
-	require msg.sender == admin
-	erc20.safeTransfer(newDAO, tokensToSend) // reverts if send failed
+    require msg.sender == admin
+    erc20.safeTransfer(newDAO, tokensToSend) // reverts if send failed
 
 ```
 
