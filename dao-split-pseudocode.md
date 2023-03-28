@@ -18,13 +18,14 @@ function signalSplitIfSuccessful(proposalId, tokenIds):
     if backingVotesCount(proposalId) <= proposal.threshold:
         cancel(proposalId)
 
-function addProposalToSplitIfSuccessful(proposalId):
+function addProposalToSplitIfSuccessful(proposalId, tokenIds):
     require state(proposalId) in [Active, ObjectionPeriod, Successful, Queued]
     require !proposal.splitExecuted
 
     escrow = getEscrowForOwner(msg.sender)
     escrow.addProposalId(proposalId)
 
+    require nouns.ownerOf(tokenIds) == escrow
     splitSignalCount[Successful][proposalId] += tokenIds.lengh
     splitTokenIds[Successful][proposalId][msg.sender].pushMany(tokenIds)
 
