@@ -226,5 +226,5 @@ function sendERC20ToNewDAO(newDAO, erc20, tokensToSend):
 ```
 
 ### SplitState
-
+TODO: maybe we don't need this
 We can add this contract as a 'state escrow' that mitigates the risk of the DAO being upgraded to provide false information.
