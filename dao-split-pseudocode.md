@@ -77,13 +77,13 @@ function isProposalExecutable(proposalId):
 
 function execute(proposalId):
     // require: there is not pending split to execute
-    if isSuccessfulProposalThresholdMet(proposalId) && !proposal.splitExecuted && !state(proposalId) != Expired:
+    if isSuccessfulProposalThresholdMet(proposalId) && !proposal.splitExecuted:
         revert
 
     // continue same logic as today
 
 function veto(proposalId):
-    require !(state(proposal) in [Pending, Executed])
+    require state(proposalId) in [Active, ObjectionPeriod, Successful, Queued]
 
     // continue same logic as today
 
