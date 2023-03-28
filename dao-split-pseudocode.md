@@ -138,7 +138,7 @@ constructor(owner, proposalId)
 
 function changeDelegate(newDelegate):
     require msg.sender == owner
-    require !(newDelegate in dao.proposal(proposalId).proposersOrSigners)
+    require all(!(newDelegate in dao.proposal(proposalId).proposersOrSigners) for proposalId in proposalIds)
 
     nouns.delegate(newDelegate)
 
