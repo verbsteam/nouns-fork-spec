@@ -55,6 +55,12 @@ function executeSplitIfFailed(proposalId):
 
 ~~~ SPLIT HELPERS ~~~
 
+function backingVotesCount(proposalId):
+    votes = nouns.getCurrentVotes(proposal.proposer, block.number)
+    for signer in proposal.signers:
+        votes += nouns.getCurrentVotes(signer)
+    return votes
+
 function isSuccessfulProposalThresholdMet(proposalId):
     signalCount = splitSignalCount[Successful][proposalId]
     threshold = proposal.totalSupply * splitThresholdBPs / 10_000
