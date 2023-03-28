@@ -167,7 +167,6 @@ function constructor(descriptor, originalNounsDAO, originalNounsToken, proposalI
     successfulOrFailedProposal = successfulOrFailedProposal_
 
 function claimTokens(tokenIds[]):
-	require dao.proposals(proposalId).splitExecuted
 	require tokenIds in dao.splitTokenIds[successfulOrFailedProposal][proposalId][msg.sender]
 
 	for tokenId in tokenIds:
