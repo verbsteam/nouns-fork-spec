@@ -18,6 +18,19 @@ function signalSplitIfSuccessful(proposalId, tokenIds):
     if backingVotesCount(proposalId) <= proposal.threshold:
         cancel(proposalId)
 
+function addProposalToSplitIfSuccessful(proposalId):
+    require state(proposalId) in [Active, ObjectionPeriod, Successful, Queued]
+    require !proposal.splitExecuted
+
+    escrow = getEscrowForOwner(msg.sender)
+    escrow.addProposalId(proposalId)
+
+    splitSignalCount[Successful][proposalId] += tokenIds.lengh
+    splitTokenIds[Successful][proposalId][msg.sender].pushMany(tokenIds)
+
+    if backingVotesCount(proposalId) <= proposal.threshold:
+        cancel(proposalId)
+
 // only works during the Pending period
 // failed means Defeated or Vetoed
 function signalSplitIfFailed(proposalId, tokenIds):
@@ -121,6 +134,7 @@ function veto(proposalId):
 // TODO add protections against DAO version change by attacker
 
 constructor(owner, proposalId)
+    proposalIds.push(proposalId)
 
 function changeDelegate(newDelegate):
     require msg.sender == owner
@@ -128,13 +142,17 @@ function changeDelegate(newDelegate):
 
     nouns.delegate(newDelegate)
 
+function addProposalId(proposalId):
+    require msg.sender == dao
+    proposalIds.push[proposalId]
+
 function withdrawNouns(tokenIds, to):
-    if dao.proposal(proposalId).splitExecuted:
+    if any(dao.proposal(proposalId).splitExecuted) for proposalId in proposalIds):
         require msg.sender == dao
     else:
         require msg.sender == owner
         // split can't be executed any more
-        require dao.state(proposalId) in [Canceled, Executed, Expired, Defeated, Vetoed]
+        require all(dao.state(proposalId) in [Canceled, Executed, Expired, Defeated, Vetoed] for proposalId in proposalIds)
 
     nouns.transfer(to, tokenIds)
 ```
