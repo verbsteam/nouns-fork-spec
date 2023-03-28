@@ -56,10 +56,22 @@ function executeSplitIfFailed(proposalId):
 ~~~ DEPLOY NEW DAO ~~~
 
 function deploySplitDAO(proposalId, splitCount):
-    // TODO
+    desc = new Descriptor(art: originalNounsArt)
+    token = new NounsToken(descriptor: desc, originalNounsDAO: dao, originalNounsToken: nouns, proposalId, nounsSplit)
+    auction = new AuctionHouse(paused: true)
+    dao = new DAO(splitThreshold: 1 token, vetoer: address(0))
+    treasury = new Executor()
+	return treasury
+
 
 function sendProRataTreasury(newDAOTreasury, splitCount, totalSupply):
-    // TODO
+    ethToSend = timelock.balance * nounsSplit / totalSupply
+    timelock.sendETHToNewDAO(newDAO, ethToSend)
+
+    for erc20 in whitelistedERC20s:
+        tokensToSend = erc20.balanceOf(timelock) * splitCount / totalSupply
+        timelock.sendERC20ToNewDAO(newDAO, erc20, tokensToSend)
+
 
 ~~~ SPLIT HELPERS ~~~
 
