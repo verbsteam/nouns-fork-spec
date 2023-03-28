@@ -105,14 +105,11 @@ function changeDelegate(newDelegate):
 function withdrawNouns(tokenIds, to):
     if dao.proposal(proposalId).splitExecuted:
         require msg.sender == dao
-        nouns.transfer(to, tokenIds)
-        return
-    
-    // split not executed
-    require msg.sender == owner
+    else:
+        require msg.sender == owner
+        // split can't be executed any more
+        require dao.state(proposalId) in [Canceled, Executed, Expired, Defeated, Vetoed]
 
-    // split can't be executed any more
-    require dao.state(proposalId) in [Canceled, Executed, Expired, Defeated, Vetoed]
     nouns.transfer(to, tokenIds)
 ```
 
@@ -138,26 +135,16 @@ function castRefundableVote(voteProposalId, support):
     dao.castRefundableVote(voteProposalId, support)
 
 function withdrawNouns(tokenIds, to):
-    state = state(proposalId)
-    if state == Canceled:
+    if dao.proposal(proposalId).splitExecuted:
+        require msg.sender == dao
+    
+    else:
         require msg.sender == owner
-        nouns.transferFrom(this, to, tokenIds)
-        return
+        // split can't be executed any more
+        require dao.state(proposalId) in [Canceled, Successful, Queued, Executed, Expired] ||
+            dao.isFailedProposalSplitExpired(proposalId)
 
-    require state in [Defeated, Vetoed]
-
-    if msg.sender == dao:
-        require dao.proposal(proposalId).splitExecuted
-        nouns.transferFrom(this, to, tokenIds)
-        return
-
-    require msg.sender == owner
-
-    require dao.isFailedProposalSplitExpired(proposalId)
-            || !dao.isFailedProposalThresholdMet(proposalID)
-
-    nouns.transferFrom(this, to, tokenIds)
-
+    nouns.transfer(to, tokenIds)
 ```
 
 ### New DAO
