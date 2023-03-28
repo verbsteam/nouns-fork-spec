@@ -103,21 +103,17 @@ function changeDelegate(newDelegate):
     nouns.delegate(newDelegate)
 
 function withdrawNouns(tokenIds, to):
-    // split can't be active
-    if (state(proposalId) in [Active, ObjectionPeriod]) ||
-        (state(proposalId) == Queued && !dao.proposal(proposalId).splitExecuted):
-        revert
+    if dao.proposal(proposalId).splitExecuted:
+        require msg.sender == dao
+        nouns.transfer(to, tokenIds)
+        return
+    
+    // split not executed
+    require msg.sender == owner
 
-    if msg.sender == dao:
-        require state(proposalId) == Executed
-            && dao.proposal(proposalId).splitExecuted
-        nouns.transferFrom(this, to, tokenIds)
-
-    else if msg.sender == owner:
-        require !dao.proposal(proposalId).splitExecuted
-            && dao.state(proposalId) in [Canceled, Executed, Expired]
-        nouns.transferFrom(this, to, tokenIds)
-
+    // split can't be executed any more
+    require dao.state(proposalId) in [Canceled, Executed, Expired, Defeated, Vetoed]
+    nouns.transfer(to, tokenIds)
 ```
 
 ### FailedProposalsEscrow
