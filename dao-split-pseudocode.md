@@ -23,7 +23,8 @@ function signalSplitIfSuccessful(proposalId, tokenIds):
 function signalSplitIfFailed(proposalId, tokenIds):
     require state(proposalId) == Pending
 
-    escrow = new FailedProposalsEscrow(owner: msg.sender, proposalId)
+    isProposer = msg.sender in proposal(proposalId).proposersOrSigners
+    escrow = new FailedProposalsEscrow(owner: msg.sender, proposalId, delegateToOwner: isProposer)
     nouns.transferFrom(msg.sender, escrow, tokenIds)
     splitSignalCount[Failed][proposalId] += tokenIds.lengh
     splitTokenIds[Failed][proposalId][msg.sender] = tokenIds
@@ -119,10 +120,12 @@ function withdrawNouns(tokenIds, to):
 
 ```
 
-### FailedProposalEscrow
+### FailedProposalsEscrow
 
 ```jsx
-constructor(owner, proposalId)
+constructor(owner, proposalId, delegateToOwner):
+    if delegateToOwner:
+        nouns.delegate(owner) 
 
 function changeDelegate(newDelegate):
     require msg.sender == owner
