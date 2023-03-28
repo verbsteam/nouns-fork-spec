@@ -23,7 +23,8 @@ function signalSplitIfSuccessful(proposalId, tokenIds):
 function signalSplitIfFailed(proposalId, tokenIds):
     require state(proposalId) == Pending
 
-    escrow = new FailedProposalsEscrow(owner: msg.sender, proposalId)
+    isProposer = msg.sender in proposal(proposalId).proposersOrSigners
+    escrow = new FailedProposalsEscrow(owner: msg.sender, proposalId, delegateToOwner: isProposer)
     nouns.transferFrom(msg.sender, escrow, tokenIds)
     splitSignalCount[Failed][proposalId] += tokenIds.lengh
     splitTokenIds[Failed][proposalId][msg.sender] = tokenIds
@@ -102,27 +103,22 @@ function changeDelegate(newDelegate):
     nouns.delegate(newDelegate)
 
 function withdrawNouns(tokenIds, to):
-    // split can't be active
-    if (state(proposalId) in [Active, ObjectionPeriod]) ||
-        (state(proposalId) == Queued && !dao.proposal(proposalId).splitExecuted):
-        revert
+    if dao.proposal(proposalId).splitExecuted:
+        require msg.sender == dao
+    else:
+        require msg.sender == owner
+        // split can't be executed any more
+        require dao.state(proposalId) in [Canceled, Executed, Expired, Defeated, Vetoed]
 
-    if msg.sender == dao:
-        require state(proposalId) == Executed
-            && dao.proposal(proposalId).splitExecuted
-        nouns.transferFrom(this, to, tokenIds)
-
-    else if msg.sender == owner:
-        require !dao.proposal(proposalId).splitExecuted
-            && dao.state(proposalId) in [Canceled, Executed, Expired]
-        nouns.transferFrom(this, to, tokenIds)
-
+    nouns.transfer(to, tokenIds)
 ```
 
-### FailedProposalEscrow
+### FailedProposalsEscrow
 
 ```jsx
-constructor(owner, proposalId)
+constructor(owner, proposalId, delegateToOwner):
+    if delegateToOwner:
+        nouns.delegate(owner) 
 
 function changeDelegate(newDelegate):
     require msg.sender == owner
@@ -139,26 +135,16 @@ function castRefundableVote(voteProposalId, support):
     dao.castRefundableVote(voteProposalId, support)
 
 function withdrawNouns(tokenIds, to):
-    state = state(proposalId)
-    if state == Canceled:
+    if dao.proposal(proposalId).splitExecuted:
+        require msg.sender == dao
+    
+    else:
         require msg.sender == owner
-        nouns.transferFrom(this, to, tokenIds)
-        return
+        // split can't be executed any more
+        require dao.state(proposalId) in [Canceled, Executed, Expired] ||
+            dao.isFailedProposalSplitExpired(proposalId)
 
-    require state in [Defeated, Vetoed]
-
-    if msg.sender == dao:
-        require dao.proposal(proposalId).splitExecuted
-        nouns.transferFrom(this, to, tokenIds)
-        return
-
-    require msg.sender == owner
-
-    require dao.isFailedProposalSplitExpired(proposalId)
-            || !dao.isFailedProposalThresholdMet(proposalID)
-
-    nouns.transferFrom(this, to, tokenIds)
-
+    nouns.transfer(to, tokenIds)
 ```
 
 ### New DAO
