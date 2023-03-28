@@ -167,6 +167,7 @@ function constructor(descriptor, originalNounsDAO, originalNounsToken, proposalI
     successfulOrFailedProposal = successfulOrFailedProposal_
 
 function claimTokens(tokenIds[]):
+    // TODO use merkle root & proof instead?
     require tokenIds in dao.splitTokenIds[successfulOrFailedProposal][proposalId][msg.sender]
 
     for tokenId in tokenIds:
