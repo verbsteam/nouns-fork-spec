@@ -194,6 +194,7 @@ function constructor(descriptor, originalNounsDAO, originalNounsToken, proposalI
 
 function claimTokens(tokenIds[]):
     // TODO use merkle root & proof instead?
+    // TODO to clarify, we must protect this code from a DAO logic change that would lie and give an attacker these tokens
     require tokenIds in dao.splitTokenIds[successfulOrFailedProposal][proposalId][msg.sender]
 
     for tokenId in tokenIds:
