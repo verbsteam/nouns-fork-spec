@@ -82,7 +82,7 @@ function deploySplitDAO(claimMerkleRoot):
     auction = new AuctionHouse(paused: true)
     dao = new DAO(vetoer: address(0))
     treasury = new Executor()
-	return (treasury, token)
+    return (treasury, token)
 
 function sendProRataTreasury(newDAOTreasury, tokenCount, totalSupply):
     ethToSend = timelock.balance * tokenCount / totalSupply
