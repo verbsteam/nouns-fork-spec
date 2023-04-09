@@ -12,32 +12,44 @@
 ## DAO
 
 ```jsx
+// execute proposal same as today, only it blocks execution during a split period
+function execute(proposalId):
+    require !splitPeriodActive()
+    // current execute logic follows below
+
 // puts tokens in escrow
 function signalSplit(tokenIds):
     // once split is active we don't allow escrows; instead use joinSplit
     require !splitPeriodActive()
 
-    escrow = getOrCreateEscrow(owner: msg.sender)
+    escrow = getOrCreateEscrow(owner: msg.sender, splitProposalId)
     nouns.transferFrom(msg.sender, escrow, tokenIds)
-    escrowCount += tokenIds.length
+    escrowCount[splitProposalId] += tokenIds.length
+
+    if (!escrows[splitProposalId][escrow]):
+        escrows[splitProposalId][escrow] = true
+        escrowArrays[splitProposalId].push(escrow)
 
 // takes tokens out of escrow
 function unsignalSplit(tokenIds, to):
     require !splitPeriodActive()
 
-    escrow = getEscrow(owner: msg.sender)
+    escrow = getEscrow(owner: msg.sender, splitProposalId)
     escrow.returnToOwner(tokenIds)
-    escrowCount -= tokenIds.length
+    escrowCount[splitProposalId] -= tokenIds.length
 
 
 // creates New DAO, sends it money, and kicks off 'split period' when more Nouns can join
 function executeSplit():
-    // TODO how do I get all token Ids? does it make sense to build the tree as escrows come in and out?
-    calculateMerkleTree()
-    (newDAOTreasury, newToken) = deploySplitDAO()
-    sendProRataTreasury(newDAOTreasury, escrowCount, adjustedTotalSupply())
-    splitEndTimestamp = block.timestamp + splitPeriodDuration
+    // Alternative is to use a split state contract that can't be updated once split is executed
+    claimMerkleRoot = calculateClaimMerkle()
+    setEscrowsSplitExecuted()
 
+    (newDAOTreasury, newToken) = deploySplitDAO(claimMerkleRoot)
+    sendProRataTreasury(newDAOTreasury, escrowCount, adjustedTotalSupply())
+    splitEndTimestamp[splitProposalId] = block.timestamp + splitPeriodDuration
+
+    splitProposalId += 1
 
 // joins New DAO with tokenIds directly, without parking in escrow; only works during the split period
 function joinSplit(tokenIds):
@@ -47,9 +59,9 @@ function joinSplit(tokenIds):
     sendProRataTreasury(newDAOTreasury, tokenIds.length, adjustedTotalSupply())
     newToken.claimTokensImmediately(msg.sender, tokenIds)
 
-function deploySplitDAO():
+function deploySplitDAO(claimMerkleRoot):
     desc = new Descriptor(art: originalNounsArt)
-    token = new NounsToken(descriptor: desc, originalNounsDAO: dao, originalNounsToken: nouns, splitEndTimestamp)
+    token = new NounsToken(descriptor: desc, originalNounsDAO: dao, originalNounsToken: nouns, splitEndTimestamp[splitProposalId], claimMerkleRoot, escrowClaimCount: escrowCount[splitProposalId])
     auction = new AuctionHouse(paused: true)
     dao = new DAO(vetoer: address(0))
     treasury = new Executor()
@@ -64,10 +76,26 @@ function sendProRataTreasury(newDAOTreasury, tokenCount, totalSupply):
         timelock.sendERC20ToNewDAO(newDAO, erc20, tokensToSend)
 
 function splitPeriodActive():
-    return block.timestamp <= splitEndTimestamp
+    if splitProposalId == 0:
+        return false
+
+    return block.timestamp <= splitEndTimestamp[splitProposalId - 1]
 
 function adjustedTotalSupply():
     return nouns.totalSupply() - nouns.balanceOf(timelock)
+
+function calculateClaimMerkle():
+    leaves = []
+    for escrow in escrowArrays[splitProposalId]:
+        tokenIds = getEscrowTokenIds(escrow)
+        for tokenId in tokenIds:
+            leaves.push(calculateLeaf(escrow.owner, tokenId))
+
+    return calculateRoot(leaves)
+
+function setEscrowsSplitExecuted():
+    for escrow in escrowArrays[splitProposalId]:
+        escrow.setSplitExecuted()
 ```
 
 ## Escrow
@@ -102,10 +130,12 @@ function sendToDAO(tokenIds):
 ## New Token
 
 ```jsx
-constructor(originalNounsDAO_, originalNounsToken_, splitEndTimestamp_):
+constructor(originalNounsDAO_, originalNounsToken_, splitEndTimestamp_, merkleRoot_, escrowClaimCount_):
     this.originalNounsDAO = originalNounsDAO_
     this.originalNounsToken = originalNounsToken_
     this.splitEndTimestamp = splitEndTimestamp_
+    this.merkleRoot = merkleRoot_
+    this.remainingTokensToClaim = escrowClaimCount_
 
 // owners of Nouns that were put in escrow use this function to claim their New DAO tokens
 function claimTokensFromEscrow(tokenIds, merkleProofs):
@@ -114,6 +144,8 @@ function claimTokensFromEscrow(tokenIds, merkleProofs):
         validateProof(msg.sender, tokenId, proof)
         seeds[tokenId] = originalNounsToken.seeds[tokenId]
         _mint(msg.sender, tokenId)
+
+    remainingTokensToClaim -= tokenIds.length
 
 // owners that join a split during the split period can claim immediately
 function claimTokensImmediately(owner, tokenIds):
@@ -138,6 +170,25 @@ function ragequit(tokenIds):
 
 // giving New DAO members time to claim their tokens and get organized before their governance begins
 function propose(...):
-    // TODO something like this:
-    // require(tokenContract.remainingTokensToClaim() == 0 || block.timestamp > daoCreated + 1 month)
+    require(tokenContract.remainingTokensToClaim() == 0 || block.timestamp > daoCreated + 1 month)
+```
+
+## Timelock V2
+
+```jsx
+constructor(daoProxy):
+    admin = daoProxy
+
+function upgrade(newImplementation):
+    require msg.sender == address(this)
+    logic = newImplementation
+
+function sendETHToNewDAO(newDAO, ethToSend):
+    require msg.sender == admin
+    sent = newDAO.send(ethToSend)
+    require sent
+
+function sendERC20ToNewDAO(newDAO, erc20, tokensToSend):
+    require msg.sender == admin
+    erc20.safeTransfer(newDAO, tokensToSend) // reverts if send failed
 ```
