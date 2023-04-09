@@ -9,6 +9,23 @@
 - once a split proposal enters the split period, the split cannot be cancelled, and escrowed Nouns are committed to the split and cannot be pulled out.
 - New DAO support 'vanilla ragequit', i.e. any Nouner can immediately quit any time with their fair share; this design protects Nouners against a malcious actor or any majority bullying in New DAO.
 
+## Design decisions summary
+
+- why DAO split over vanilla RQ?
+  - so the event is rare and is not classified as distribution
+- why owners split and not delegates, and why can't we tie a split decision to a vote?
+  - Nouns token delegation doesn't store which Nouns are delegated to each account, so we can't tell which Nouns participated in each vote
+  - This kind of action seems more appropriate for owners to take, as it involves transfering their Nouns
+- why allow vanilla ragequit in New DAOs, vs deploying New DAOs with the same DAO split as the OG DAO?
+  - a split design would enable an attacker to follow splitters into their new DAO in a recursive attrition war (we have ideas on how to dilute the attacker, but they add undesired UX complexities)
+  - a split design might lead to distributions in New DAO such that a majority there can bully a minority that doesn't have enough tokens to meet the split threshold (e.g. 140 Nouns split, 130 collude to bully the other 10)
+- why add the new split proposal flow?
+  - if we tie splits to specific proposals, we would have to make proposal queuing time longer, which makes all honest proposals longer just for the rare case of needing to split; feels like a bad balance
+- why add a 'no prop execution' constraint vs making sure the split proposal ends in time?
+  - we're afraid of the timestamp approach leading to splits ending too early or too late; too early might mean not enough people are able to join, and too late can lead to a malicious proposal executing ahead of the split
+  - the timestamps approach might lead to people having to have two splits in parallel and moving from one to another
+  - overall UX feels risky
+
 ## DAO
 
 ```jsx
