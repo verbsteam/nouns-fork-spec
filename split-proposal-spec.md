@@ -8,6 +8,7 @@
   - Any owner can put their tokens in escrow, contributing towards reaching split threshold.
   - Token owners can pull their tokens out of escrow as long we haven't entered the split period.
   - We enter the split period when the number of escrowed tokens meets the split threshold, and someone calls the execute split DAO function.
+  - Escrow enables voting & proposing while in escrow by allowing token owners to delegate their votes.
 - **Split period**:
   - Starts upon the deployment of a New DAO, and goes for several days (e.g. 7 days), allowing more token owners to join New DAO.
   - During this period regular OG DAO proposals can't be executed, to prevent race conditions between the split flow and any malicious proposals.
@@ -26,6 +27,8 @@
   - A split design might lead to distributions in New DAO such that a majority there can bully a minority that doesn't have enough tokens to meet the split threshold (e.g. 140 Nouns split, 130 collude to bully the other 10).
 - Why add the new split proposal flow?
   - If we tie splits to specific proposals, we would have to make proposal queuing time longer, which makes all honest proposals longer just for the rare case of needing to split; feels like a bad balance.
+  - Tying to a proposal introduces complexities in case a proposal is canceled or takes longer due to objection period.
+  - It's easy to support veto capture / holding hostage scenarios without being tied to a proposal.
 - Why add a 'no prop execution' constraint vs making sure the split proposal ends in time?
   - We're afraid of the timestamp approach leading to splits ending too early or too late; too early might mean not enough people are able to join, and too late can lead to a malicious proposal executing ahead of the split.
   - The timestamps approach might lead to people having to have two splits in parallel and moving from one to another

@@ -1,31 +1,5 @@
 # Split Proposal
 
-## High level spec
-
-- any Nouner can create a new split proposal, as long as there isn't already an active one.
-- the proposal to split is in 'escrow period' from creation until threshold is reached, or until all Nouns pull out of escrow.
-- once split threshold is reached anyone can execute the split, moving the DAO into a 'split period', during which Nouners can split with more nouns immediately into the New DAO, without parking in escrow first; the split period duration is a DAO-configured variable, e.g. set to 7 days.
-- during the 'split period' OG DAO proposals cannot be executed.
-- once a split proposal enters the split period, the split cannot be cancelled, and escrowed Nouns are committed to the split and cannot be pulled out.
-- New DAO support 'vanilla ragequit', i.e. any Nouner can immediately quit any time with their fair share; this design protects Nouners against a malcious actor or any majority bullying in New DAO.
-
-## Design decisions summary
-
-- why DAO split over vanilla RQ?
-  - so the event is rare and is not classified as distribution
-- why owners split and not delegates, and why can't we tie a split decision to a vote?
-  - Nouns token delegation doesn't store which Nouns are delegated to each account, so we can't tell which Nouns participated in each vote
-  - This kind of action seems more appropriate for owners to take, as it involves transfering their Nouns
-- why allow vanilla ragequit in New DAOs, vs deploying New DAOs with the same DAO split as the OG DAO?
-  - a split design would enable an attacker to follow splitters into their new DAO in a recursive attrition war (we have ideas on how to dilute the attacker, but they add undesired UX complexities)
-  - a split design might lead to distributions in New DAO such that a majority there can bully a minority that doesn't have enough tokens to meet the split threshold (e.g. 140 Nouns split, 130 collude to bully the other 10)
-- why add the new split proposal flow?
-  - if we tie splits to specific proposals, we would have to make proposal queuing time longer, which makes all honest proposals longer just for the rare case of needing to split; feels like a bad balance
-- why add a 'no prop execution' constraint vs making sure the split proposal ends in time?
-  - we're afraid of the timestamp approach leading to splits ending too early or too late; too early might mean not enough people are able to join, and too late can lead to a malicious proposal executing ahead of the split
-  - the timestamps approach might lead to people having to have two splits in parallel and moving from one to another
-  - overall UX feels risky
-
 ## DAO
 
 ```jsx
@@ -58,9 +32,12 @@ function unsignalSplit(tokenIds, to):
 
 // creates New DAO, sends it money, and kicks off 'split period' when more Nouns can join
 function executeSplit():
+    require escrowCount[splitProposalId] > splitThreshold()
+
+    splitProposalExecuted[splitProposalId] = true
+
     // Alternative is to use a split state contract that can't be updated once split is executed
     claimMerkleRoot = calculateClaimMerkle()
-    setEscrowsSplitExecuted()
 
     (newDAOTreasury, newToken) = deploySplitDAO(claimMerkleRoot)
     sendProRataTreasury(newDAOTreasury, escrowCount, adjustedTotalSupply())
@@ -110,16 +87,17 @@ function calculateClaimMerkle():
 
     return calculateRoot(leaves)
 
-function setEscrowsSplitExecuted():
-    for escrow in escrowArrays[splitProposalId]:
-        escrow.setSplitExecuted()
+function splitThreshold():
+    return adjustedTotalSupply() * splitThresholdBPs / 10_000
 ```
 
 ## Escrow
 
 ```jsx
-constructor(owner_):
+constructor(owner_, splitProposalId_):
     this.owner = owner_
+    this.splitProposalId = splitProposalId_
+    nouns.delegate(owner_)
 
 function delegate(to):
     nouns.delegate(to)
@@ -127,20 +105,17 @@ function delegate(to):
 function castRefundableVote(proposalId, support):
     dao.castRefundableVote(proposalId, support)
 
-function setSplitExecuted():
-    require msg.sender == dao
-    splitExecuted = true
-
 // lets owners pull out prior to split execution; once split is executed lets the DAO take the nouns
 function returnToOwner(tokenIds):
     require msg.sender == dao
-    require !splitExecuted
+    require !dao.splitProposalExecuted(splitProposalId)
 
     nouns.transferFrom(this, owner, tokenIds)
 
 // anyone can send tokens to the DAO once the split has been executed
+// maybe set the DAO as approved address to transfer instead
 function sendToDAO(tokenIds):
-    require splitExecuted
+    require dao.splitProposalExecuted(splitProposalId)
     nouns.tranferFrom(this, dao, tokenIds)
 ```
 
@@ -167,7 +142,7 @@ function claimTokensFromEscrow(tokenIds, merkleProofs):
 // owners that join a split during the split period can claim immediately
 function claimTokensImmediately(owner, tokenIds):
     require msg.sender == originalNounsDAO
-    require block.timestamp <= this.splitEndTimestamp
+    require block.timestamp <= this.splitEndTimestamp // this is to prevent OG DAO upgrading contracts and trying to mint new tokens
 
     for tokenId in tokenIds:
         seeds[tokenId] = originalNounsToken.seeds[tokenId]
@@ -181,7 +156,7 @@ function claimTokensImmediately(owner, tokenIds):
 // reach split threshold to escape the bullying
 function ragequit(tokenIds):
     // reverts if owner didn't approve DAO to transfer their tokens
-    token.transferFrom(msg.sender, timelock, tokenIds)
+    token.transferFrom(msg.sender, timelock, tokenIds) // maybe burn instead?
     // sends fair share of ETH and ERC20s, using the number of quitting tokens out of total supply
     sendFairShare(msg.sender, tokenIds.length)
 
