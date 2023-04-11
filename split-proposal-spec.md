@@ -45,3 +45,18 @@
 - [Day 14] Evil executes the proposal, draining the OG DAO from whatever was left there.
 
 Evil might choose to split into this New DAO with many of their tokens, in which case honest voters will be able to ragequit on their own before Evil is able to execute any malicious proposals. If Evil doesn't split with them, they may continue to run New DAO however they like.
+
+## Griefing vector: bullying and splitting
+
+Say Evil wants to force everyone to split into a new DAO:
+
+1. Evil submits a proposal that spends a lot, not even to their own account, e.g. to donate half the treasury to Gitcoin.
+2. Evil is able to pass the proposal.
+3. Evil activates a split, leaving just enough Nouns behind to stay above proposal threshold.
+4. The split happens, and anyone that didn't split is left with a much smaller treasury (they lost the Gitcoin donation + the funds from Evil splitting).
+
+Such a scenario pushes all other Nouners into splitting as well. It's possible for honest actors to work together against this attack by:
+
+1. Splitting with enough Nouns such that the bullying proposal fails due to insufficient funds, and stays this way until the proposal expires (e.g. they might pause auctions to prevent revenues or pass proposals to spend new revenues).
+2. They can take the split Nouns that were sent to the treasury, and pass proposals that sell them back to honest accounts at the amount of ETH they have available from the split.
+3. Honest actors can vanilla ragequit from New DAO, and use that ETH to buy back their old Nouns.
