@@ -48,14 +48,16 @@ Evil might choose to split into this New DAO with many of their tokens, in which
 
 ## Griefing vector: bullying and splitting
 
-Say Evil wants to force everyone to split into a new DAO:
+Evil can leave the DAO after voting for a large spend, leaving them to foot the bill.
 
-1. Evil submits a proposal that spends a lot, not even to their own account, e.g. to donate half the treasury to Gitcoin.
-2. Evil is able to pass the proposal.
+1. Evil submits a proposal that spends a lot, e.g. to donate half the treasury to Gitcoin.
+2. The DAO votes to pass the proposal, both Evil and other voters.
 3. Evil activates a split, leaving just enough Nouns behind to stay above proposal threshold.
 4. The split happens, and anyone that didn't split is left with a much smaller treasury (they lost the Gitcoin donation + the funds from Evil splitting).
 
-Such a scenario pushes all other Nouners into splitting as well. It's possible for honest actors to work together against this attack by:
+Such a scenario pushes all other Nouners into splitting as well, or to stay with a lower than expected treasury.
+
+It's possible for honest actors to work together against this attack by:
 
 1. Splitting with enough Nouns such that the bullying proposal fails due to insufficient funds, and stays this way until the proposal expires (e.g. they might pause auctions to prevent revenues or pass proposals to spend new revenues).
 2. They can take the split Nouns that were sent to the treasury, and pass proposals that sell them back to honest accounts at the amount of ETH they have available from the split.
