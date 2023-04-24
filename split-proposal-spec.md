@@ -30,7 +30,7 @@
 - Any Noun that is then transfered out of the new holding contract, goes back into the above calculations, and it's important to recognize this as a non-intuitive consequence.
 - This is why Nouns are not simply held in the treasury; to make sure transfers go through a new function that helps Nouners understand the implication, e.g. by setting the function name to `transferNounsAndGrowTotalSupply` or something simialr, as well as emitting events that indicate the new (and greater) total supply used by the DAO.
 
-## Design decisions summary
+## FAQ
 
 - Why DAO split over vanilla RQ?
   - So the event is rare and is not classified as distribution.
