@@ -8,12 +8,27 @@
   - Any owner can put their tokens in escrow, contributing towards reaching split threshold.
   - Token owners can pull their tokens out of escrow as long we haven't entered the split period.
   - We enter the split period when the number of escrowed tokens meets the split threshold, and someone calls the execute split DAO function.
-  - Escrow enables voting & proposing while in escrow by allowing token owners to delegate their votes.
+  - Escrow does not allow voting & proposing; this works by the escrow not having a delegation feature, nor voting & proposing functions. The motivation of preventing voting is to add cost to going into escrow, to minimize 'parking' Nouns in escrow for long periods of time.
 - **Split period**:
   - Starts upon the deployment of a New DAO, and goes for several days (e.g. 7 days), allowing more token owners to join New DAO.
   - During this period regular OG DAO proposals can't be executed, to prevent race conditions between the split flow and any malicious proposals.
   - Once a split is started it cannot be cancelled.
 - New DAOs are deployed with vanilla ragequit in place; otherwise it's possible for a New DAO majority to collude to hurt a minority, and the minority wouldn't have any last resort if they can't reach the split threshold; furthermore bullies/attackers can recursively chase minorities into New DAOs in an undesired attrition war.
+
+## Additional Details
+
+### Split signaling
+
+- When a Nouner escrows their Nouns or joins an active split, they may provide additional information on why they are splitting, to be recorded onchain:
+  - Proposal Ids: one or more IDs of proposals that pushed them to split, whether by passing or by being shot down.
+  - Reason: free text where they can elaborate, similar to how vote reasons work.
+
+### What happens with OG Nouns that participate in a split?
+
+- OG Nouns are sent to a new Nouns holding contract, controlled and owned by the OG DAO treasury.
+- Nouns that are held there are excluded from the total supply used in key DAO calcuations: proposal threshold, quorum, split fair share and split threshold.
+- Any Noun that is then transfered out of the new holding contract, goes back into the above calculations, and it's important to recognize this as a non-intuitive consequence.
+- This is why Nouns are not simply held in the treasury; to make sure transfers go through a new function that helps Nouners understand the implication, e.g. by setting the function name to `transferNounsAndGrowTotalSupply` or something simialr, as well as emitting events that indicate the new (and greater) total supply used by the DAO.
 
 ## Design decisions summary
 
@@ -29,10 +44,17 @@
   - If we tie splits to specific proposals, we would have to make proposal queuing time longer, which makes all honest proposals longer just for the rare case of needing to split; feels like a bad balance.
   - Tying to a proposal introduces complexities in case a proposal is canceled or takes longer due to objection period.
   - It's easy to support veto capture / holding hostage scenarios without being tied to a proposal.
+  - An attacker might submit multiple malicious proposals at the same time. In such a scenario, a single split proposal is a natural shelling point for all Nouners to split on, whereas if we tie splits to proposals we might suffer from different voters attempting to split on different proposals and at the worst case not meeting the split threshold at all.
 - Why add a 'no prop execution' constraint vs making sure the split proposal ends in time?
   - We're afraid of the timestamp approach leading to splits ending too early or too late; too early might mean not enough people are able to join, and too late can lead to a malicious proposal executing ahead of the split.
   - The timestamps approach might lead to people having to have two splits in parallel and moving from one to another
   - Overall UX feels risky
+- Doesn't this design allow an attacker to split as well and grief Nouners into having to use the New DAO vanilla ragequit?
+  - Yes, this griefing vector is a known issue of this design.
+  - In an attempt to minimize the scope of this version of the split design, we're forced to work around the constraint that the Nouns token contract does not provide the information of which Noun ID was delegated to whom at a certain point in time (the vote snapshot block).
+  - This constraint makes it impossible to condition a Noun's split on its vote.
+  - Worth noting that hinging on votes and thus tying split to proposals, re-introduces the tricky attack vector of submitting multiple malicious proposals at once, to create confusion on which proposal everyone should split.
+  - It's possible to iterate towards better solutions on all of these fronts, e.g. by updating the DAO to use NFT-based voting rather than voting balance and snapshots; we'd love to explore those possibilities in a different future version.
 
 ## An example story
 
