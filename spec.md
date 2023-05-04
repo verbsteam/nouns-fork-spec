@@ -34,6 +34,21 @@
 - Any Noun that is then transfered out of the new holding contract, goes back into the above calculations, and it's important to recognize this as a non-intuitive consequence.
 - For this reason we're considering a change where Nouns won't be sent to the treasury, but rather to a holding contract; to make sure transfers go through a new function that helps Nouners understand the implication, e.g. by setting the function name to `transferNounsAndGrowTotalSupply` or something simialr, as well as emitting events that indicate the new (and greater) total supply used by the DAO.
 
+## What happens in the new DAO?
+
+- All contracts are upgradable, so this is just the initial setup that can be changed through upgrade proposals.
+
+### Governor
+
+- There's delayed governance, meaning proposals can't be posted onchain until all escrow forkers have claimed their new tokens, or until the delayed governance expiration timestamp has passed. The intention is to protect slow claimers from abuse by fast claimers.
+- There's vanilla ragequit, for reasons mentioned in the high level section.
+
+### Token and Auction
+
+- Token art is the same as the original Nouns, and forkers get to keep the same token IDs and same art per token.
+- Auction house is paused and can be resumed via a proposal; it then starts selling at the same ID the original auction was when the fork happened.
+- Founders reward remains active and sent to the Nounders account set in the original token.
+
 ## Example stories
 
 ### A malicious proposal
