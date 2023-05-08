@@ -31,9 +31,9 @@
 - During the escrow period Nouns are held in the escrow contract.
 - During the forking period additional forking Nouns are sent directly to the original DAO's treasury.
 - Once the forking period is over, all Nouns that are in the escrow contract can be withdrawn by the original DAO via a proposal.
-- Nouns that are held in escrow or in the original DAO treasury are excluded from the total supply used in key DAO calcuations: proposal threshold, quorum, split fair share and split threshold.
-- Any Noun that is then transfered out of the new holding contract, goes back into the above calculations, and it's important to recognize this as a non-intuitive consequence.
-- For this reason we're considering a change where Nouns won't be sent to the treasury, but rather to a holding contract; to make sure transfers go through a new function that helps Nouners understand the implication, e.g. by setting the function name to `transferNounsAndGrowTotalSupply` or something simialr, as well as emitting events that indicate the new (and greater) total supply used by the DAO.
+- Nouns that are held in escrow or in the original DAO treasury are excluded from the total supply used in key DAO calculations: proposal threshold, quorum, fork funds calculation and fork threshold.
+- Any Noun that is then transferred out of the escrow or treasury, goes back into the above calculations, and it's important to recognize this as a non-intuitive consequence.
+- For this reason we're considering a change where Nouns won't be sent to the treasury, but rather to a holding contract; to make sure transfers go through a new function that helps Nouners understand the implication, e.g. by setting the function name to `transferNounsAndGrowTotalSupply` or something similar, as well as emitting events that indicate the new (and greater) total supply used by the DAO.
 
 ## What happens in the new DAO?
 
@@ -41,7 +41,7 @@
 
 ### Governor
 
-- There's delayed governance, meaning proposals can't be posted onchain until all escrow forkers have claimed their new tokens, or until the delayed governance expiration timestamp has passed. The intention is to protect slow claimers from abuse by fast claimers.
+- There's delayed governance, meaning proposals can't be created until all escrow forkers have claimed their new tokens, or until the delayed governance expiration timestamp has passed. The intention is to protect slow claimers from abuse by fast claimers.
 - There's vanilla ragequit, for reasons mentioned in the high level section.
 
 ### Token and Auction
@@ -52,19 +52,11 @@
 
 ## Example stories
 
-### A malicious proposal
+### Griefing attack 1: force to quit the fork DAO
 
-- [Day 0] Evil puts up a malicious proposal to drain the treasury to an account they control.
-- [Day 0] Alice immediately signals to fork, sending her Nouns to an escrow contract; she also reaches out to all the Nouners she knows and asks them to signal fork as well.
-- [Day 1 - 6] Bob, Charlie and many other Nouners signal to fork.
-- [Day 6] Fork threshold is reached, and Alice executes the fork, moving the DAO into an active forking period that will last 7 days.
-- [Day 12] Evil tries to execute their proposal, but they can't because the forking period is active.
-- [Day 13] The last few Nouners still join the fork.
-- [Day 14] Evil executes the proposal, draining the OG DAO from whatever was left there.
+A majority attacker might choose to fork into this new DAO with many of their tokens, in which case minority token holders will be pushed to ragequit on their own before the attacker is able to execute any malicious proposals. If the attacker doesn't fork with them, they may continue to run their new DAO however they like.
 
-Evil might choose to fork into this new DAO with many of their tokens, in which case honest token holders will be able to ragequit on their own before Evil is able to execute any malicious proposals. If Evil doesn't fork with them, they may continue to run their new DAO however they like.
-
-### Griefing vector: bullying and splitting
+### Griefing attack 2: bullying and splitting
 
 Evil can leave the DAO after voting for a large spend, leaving them to foot the bill.
 
