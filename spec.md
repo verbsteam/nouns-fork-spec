@@ -3,18 +3,19 @@
 ## High Level
 
 - Nouns Fork introduces a new forking user flow. This flow enables Nouners to start a fork as soon as the Fork Threshold is reached.
-- The feature operates in one of two states: (1) Escrow Period and (2) Forking Period.
+- The flow operates in one of two states: (1) Escrow Period and (2) Forking Period.
 - **Escrow Period**:
-  - Any Nouner can put their tokens in escrow, contributing towards reaching fork threshold.
-  - Nouners can pull their tokens out of escrow as long we haven't entered the forking period.
-  - We enter the forking period when the number of escrowed tokens meets the fork threshold, and someone calls the fork DAO function.
-  - Escrow does not allow voting & proposing; this works by the escrow not having a delegation feature, nor voting & proposing functions. The motivation of preventing voting is to add cost to going into escrow, to minimize 'parking' Nouns in escrow for long periods of time.
+  - Any Nouner can put their tokens in escrow, contributing towards reaching the fork threshold, which is a % of total supply.
+  - Nouners can pull their tokens out of escrow as long as the forking period hasn’t started.
+  - The forking period starts when the number of escrowed tokens meets the fork threshold, and someone calls the fork DAO function.
+  - Tokens in escrow cannot be used for voting nor proposing. The motivation is to add cost to going into escrow, to minimize 'parking' Nouns in escrow for long periods of time.
 - **Forking Period**:
-  - Begins when the fork function is called, and a new Nouns DAO is deployed; goes for several days (e.g. 7 days), allowing more token owners to join the new DAO.
+  - Begins when the fork function is called; the fork function deploys a new Nouns DAO.
+  - Lasts for several days (e.g. 7 days), allowing additional token holders to send their Nouns to the DAO and join the newly forked DAO.
   - During this period original DAO proposals can't be executed, to prevent race conditions between the forking flow and any malicious proposals.
-  - Once forking starts it cannot be cancelled.
+  - Once forking starts it cannot be canceled.
 - New DAOs are deployed with vanilla ragequit in place; otherwise it's possible for a new DAO majority to collude to hurt a minority, and the minority wouldn't have any last resort if they can't reach the forking threshold; furthermore bullies/attackers can recursively chase minorities into fork DAOs in an undesired attrition war.
-- Funds are sent from the original DAO to the new DAO.
+- Funds (ETH & ERC20 tokens) are sent from the original DAO to the new DAO.
 - Forking Nouners claim new DAO tokens with the same IDs and same art as the Nouns they returned to the original DAO.
 
 ## Additional Details
