@@ -31,7 +31,7 @@
 - During the escrow period Nouns are held in the escrow contract.
 - During the forking period additional forking Nouns are sent directly to the original DAO's treasury.
 - Once the forking period is over, all Nouns that are in the escrow contract can be withdrawn by the original DAO via a proposal.
-- Nouns that are held in escrow or in the original DAO treasury are excluded from the total supply used in key DAO calculations: proposal threshold, quorum, fork funds calculation and fork threshold.
+- Nouns that are held in escrow after the forking period starts or in the original DAO treasury are excluded from the total supply used in key DAO calculations: proposal threshold, quorum, fork funds calculation and fork threshold.
 - Any Noun that is then transferred out of the escrow or treasury, goes back into the above calculations, and it's important to recognize this as a non-intuitive consequence.
 - For this reason we're considering a change where Nouns won't be sent to the treasury, but rather to a holding contract; to make sure transfers go through a new function that helps Nouners understand the implication, e.g. by setting the function name to `transferNounsAndGrowTotalSupply` or something similar, as well as emitting events that indicate the new (and greater) total supply used by the DAO.
 
@@ -79,11 +79,11 @@ It's possible for honest actors to work together against this attack by:
 
 New functions:
 
-- `signalFork(tokenIds)`
+- `escrowToFork(tokenIds)`
   - allows Nouners to signal their intent to fork.
   - transfers Nouns with the provided token IDs to the escrow contract.
   - contributes towards reaching the fork threshold.
-- `unsignalFork(tokenIds)`
+- `withdrawFromForkEscrow(tokenIds)`
   - allows Nouners to pull their Nouns out of escrow.
   - transfers their Nouns back to them.
   - removes their contribution towards reaching the fork threshold.
@@ -91,7 +91,7 @@ New functions:
   - starts the forking period.
   - deploys a new Nouns DAO (see new DAO details below).
 - `joinFork(tokenIds)`
-  - allows Nouners to join the new DAO.
+  - allows Nouners to join the new DAO during the forking period, e.g. 7 days.
   - transfers their Nouns to the current DAO's treasury.
   - mints new DAO tokens to them.
 - `withdrawNounsFromEscrow(tokenIds)`
@@ -102,14 +102,33 @@ New functions:
 
 New admin functions (can only be executed via proposals):
 
-- `_setSplitEscrow(escrowAddress)`
+- `_setForkThreshold(thresholdBPs)`
+  - sets the minimum % out of Nouns total supply that need to be escrowed to start a forking period.
+- `_setForkPeriod(period)`
+  - sets the duration of the forking period.
+- `_setForkEscrow(escrowAddress)`
   - sets the escrow contract address.
-- `_setSplitDAODeployer(deployerAddress)`
+- `_setForkDAODeployer(deployerAddress)`
   - sets the address of the contract that deploys fork DAOs.
-- `_setErc20TokensToIncludeInSplit(erc20Addresses)`
+- `_setErc20TokensToIncludeInFork(erc20Addresses)`
   - sets the list of ERC20 tokens that will be transferred to fork DAOs.
 
+Modified functions:
+
+- `execute(proposalId)`
+  - reverts during an active forking period.
+- `proposalThreshold()`
+  - uses `adjustedTotalSupply` instead of `nouns.totalSupply`.
+- `quorumVotes(proposalId)`
+  - uses `adjustedTotalSupply` instead of `nouns.totalSupply`.
+- `propose(txs)`
+  - uses `adjustedTotalSupply` instead of `nouns.totalSupply` when setting totalSupply on a new proposal.
+- `proposeOnTimelockV1(txs)`
+  - enables proposals that get executed on the original Timelock contract.
+
 ### Timelock (NounsDAOExecutorV2)
+
+The current Timelock contract is not upgradable, so we need to deploy a new one to add the new functions that support forking fund transfers. The migration plan to the new Timelock is detailed further in a section below.
 
 TLDR:
 
@@ -121,8 +140,10 @@ New functions:
 
 - `sendETH(to, amount)`
   - sends ETH to the provided address, which would be the fork DAO's treasury.
+  - can only be called by the DAO governor contract.
 - `sendERC20(to, amount)`
   - sends ERC20 tokens to the provided address, which would be the fork DAO's treasury.
+  - can only be called by the DAO governor contract.
 
 ### NounsDAOForkEscrow
 
@@ -138,7 +159,7 @@ New functions:
 - `withdrawTokensToDAO(tokenIds, to)`
   - sends Nouns to the original DAO's treasury.
   - can only be called by the original DAO's treasury (timelock) contract.
-- `closeEscrow`
+- `closeEscrow()`
   - is called by the DAO when the forking period starts.
   - increments the latest fork ID.
   - allows the DAO to withdraw Nouns from escrow.
@@ -146,7 +167,7 @@ New functions:
 
 ### ForkDAODeployer
 
-- `deploy`
+- `deploy()`
   - deploys a new Nouns DAO, including a token, auction, governor and treasury.
 
 ## Fork DAO Contracts
@@ -178,7 +199,7 @@ New admin functions (can only be executed via proposals):
 
 ### Timelock
 
-The same as the new timelock in the original DAO.
+The same as Timelock V2 in the original DAO, upgradable and with the new functions to send funds.
 
 ### Token
 
@@ -195,6 +216,8 @@ New functions:
   - decrements the counter of remaining tokens to claim.
 - `claimDuringForkingPeriod(tokenIds)`
   - allows Nouners to mint new tokens with the same ID and art as their OG Nouns.
+  - only the OG DAO is allowed to call this.
+  - can only be called during the forking period.
 
 ### Auction
 
@@ -202,3 +225,16 @@ TLDR:
 
 - Upgradability changed from the old transparent proxy design to the new UUPS pattern.
 - Everything else is the same.
+
+## Timelock Migration
+
+1. TimelockV2 is deployed, with the DAO as its admin.
+2. A DAO proposal that:
+   1. Upgrades to DAOv3 pointing to the new timelock.
+   2. Transfers all ETH to the new timelock.
+   3. Transfers all ERC20s to the new timelock.
+   4. Changes the nouns.eth to new timelock.
+   5. Transfer ownership of TokenBuyer & Payer to new timelock.
+3. Maybe later:
+   1. Transfer NFTs to new timelock: e.g. lilnouns.
+   2. Change the address set to receive founder rewards from other nounish projects.
