@@ -94,7 +94,7 @@ New functions:
   - allows Nouners to join the new DAO during the forking period, e.g. 7 days.
   - transfers their Nouns to the current DAO's treasury.
   - mints new DAO tokens to them.
-- `withdrawNounsFromEscrow(tokenIds)`
+- `withdrawDAONounsFromEscrow(tokenIds, destination)`
   - allows the DAO to withdraw Nouns from the escrow contract.
   - only works once the forking period starts.
 - `adjustedTotalSupply`
