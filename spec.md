@@ -233,8 +233,9 @@ TLDR:
    1. Upgrades to DAOv3 pointing to the new timelock.
    2. Transfers all ETH to the new timelock.
    3. Transfers all ERC20s to the new timelock.
-   4. Changes the nouns.eth to new timelock.
+      - Some stETH dust will be left behind. We can decide to write a contract which transfers the exact amount.
+   4. Changes nouns.eth to new timelock.
    5. Transfer ownership of TokenBuyer & Payer to new timelock.
 3. Maybe later:
-   1. Transfer NFTs to new timelock: e.g. lilnouns.
+   1. Approve new timelock the transfer NFTs in old timelock, e.g. lilnouns
    2. Change the address set to receive founder rewards from other nounish projects.
