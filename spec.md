@@ -95,7 +95,7 @@ New functions:
   - transfers Nouns with the provided token IDs to the escrow contract.
   - mints new DAO tokens to them.
 - `withdrawDAONounsFromEscrow(tokenIds, destination)`
-  - allows the DAO to withdraw Nouns from the escrow contract.
+  - allows the DAO to withdraw Nouns from the escrow contract, to the destination account.
   - only works once the forking period starts.
 - `adjustedTotalSupply`
   - returns the total supply of Nouns minus nouns owned by the escrow contract and not part of an active fork ID.
