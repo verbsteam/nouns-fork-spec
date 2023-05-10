@@ -1,4 +1,8 @@
-# Split Proposal
+# Nouns Fork Pseudocode
+
+## This files is outdated; please refer to the spec only for now. An update is coming soon!
+
+---
 
 ## DAO
 
