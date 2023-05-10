@@ -149,6 +149,8 @@ New functions:
 
 ### NounsDAOForkEscrow
 
+A single escrow contract to handle all forks off of the original DAO. Under the hood all actions relate to a specific fork ID, which is incremented every time a new fork is started.
+
 - `markOwner(owner, tokenIds)`
   - documents owner's sending tokenIds to escrow, and the specific fork ID they are participating in.
   - increments the fork's escrowed Nouns count.
