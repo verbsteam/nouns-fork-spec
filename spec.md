@@ -29,11 +29,11 @@
 ### What happens with original Nouns that participate in a fork?
 
 - During the escrow period Nouns are held in the escrow contract.
-- During the forking period additional forking Nouns are sent directly to the original DAO's treasury.
+- During the forking period additional forking Nouns are also sent to the escrow contract; the motivation is to have a clean separation between fork-related Nouns and Nouns owned by the DAO for other reasons.
 - Once the forking period is over, all Nouns that are in the escrow contract can be withdrawn by the original DAO via a proposal.
-- Nouns that are held in escrow after the forking period starts or in the original DAO treasury are excluded from the total supply used in key DAO calculations: proposal threshold, quorum, fork funds calculation and fork threshold.
-- Any Noun that is then transferred out of the escrow or treasury, goes back into the above calculations, and it's important to recognize this as a non-intuitive consequence.
-- For this reason we're considering a change where Nouns won't be sent to the treasury, but rather to a holding contract; to make sure transfers go through a new function that helps Nouners understand the implication, e.g. by setting the function name to `transferNounsAndGrowTotalSupply` or something similar, as well as emitting events that indicate the new (and greater) total supply used by the DAO.
+- Nouns that are held in escrow after the forking period starts are excluded from the total supply used in key DAO calculations: proposal threshold, quorum, fork funds calculation and fork threshold.
+- Any Noun that is then transferred out of the escrow, goes back into the above calculations, and it's important to recognize this as a non-intuitive consequence.
+- For this reason we're considering a change to make sure transfers go through a new function that helps Nouners understand the implication, e.g. by setting the function name to `withdrawNounsAndGrowTotalSupply` or something similar, as well as emitting events that indicate the new (and greater) total supply used by the DAO.
 
 ## What happens in the new DAO?
 
@@ -92,20 +92,22 @@ New functions:
   - deploys a new Nouns DAO (see new DAO details below).
 - `joinFork(tokenIds)`
   - allows Nouners to join the new DAO during the forking period, e.g. 7 days.
-  - transfers their Nouns to the current DAO's treasury.
+  - transfers Nouns with the provided token IDs to the escrow contract.
   - mints new DAO tokens to them.
 - `withdrawDAONounsFromEscrow(tokenIds, destination)`
   - allows the DAO to withdraw Nouns from the escrow contract.
   - only works once the forking period starts.
 - `adjustedTotalSupply`
-  - returns the total supply of Nouns that are not in escrow or in the treasury.
+  - returns the total supply of Nouns minus nouns owned by the escrow contract and not part of an active fork ID.
 
 New admin functions (can only be executed via proposals):
 
 - `_setForkThreshold(thresholdBPs)`
   - sets the minimum % out of Nouns total supply that need to be escrowed to start a forking period.
+  - no hard-coded bounds enforcement, since this parameter cannot brick the DAO, i.e. an error can be easily fixed by passing a new proposal.
 - `_setForkPeriod(period)`
   - sets the duration of the forking period.
+  - no hard-coded bounds enforcement, since this parameter cannot brick the DAO, i.e. an error can be easily fixed by passing a new proposal.
 - `_setForkEscrow(escrowAddress)`
   - sets the escrow contract address.
 - `_setForkDAODeployer(deployerAddress)`
@@ -180,6 +182,9 @@ TLDR:
 - Adds delayed governance.
 - Adds vanilla ragequit.
 - Upgradability changed from the old proxy design to the new UUPS pattern.
+- Includes [bug fixes from V2](https://nouns.wtf/vote/152):
+  - Voting delay editing
+  - Cancel proposal
 
 New functions:
 
@@ -207,6 +212,8 @@ TLDR:
 
 - Made upgradable (fork DAOs can upgrade it such that it's no longer upgradable).
 - Supports minting / claiming tokens with the same ID and art as OG DAO.
+- Continues the founder reward sent to the Nounders account set in the original token.
+- Uses the same descriptor and art contracts as the original token. The original DAO could change these contracts after the fork, in which case the fork DAO can pass proposals to use new descriptor and art contracts with the original data.
 
 New functions:
 
