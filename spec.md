@@ -31,7 +31,7 @@
 - During the escrow period Nouns are held in the escrow contract.
 - During the forking period additional forking Nouns are also sent to the escrow contract; the motivation is to have a clean separation between fork-related Nouns and Nouns owned by the DAO for other reasons.
 - Once the forking period is over, all Nouns that are in the escrow contract can be withdrawn by the original DAO via a proposal.
-- Nouns that are held in escrow after the forking period starts are excluded from the total supply used in key DAO calculations: proposal threshold, quorum, fork funds calculation and fork threshold.
+- Nouns that are held in the treasury, or in the escrow after the forking period starts, are excluded from the total supply used in key DAO calculations: proposal threshold, quorum, fork funds calculation and fork threshold.
 - Any Noun that is then transferred out of the escrow, goes back into the above calculations, and it's important to recognize this as a non-intuitive consequence.
 - For this reason we're considering a change to make sure transfers go through a new function that helps Nouners understand the implication, e.g. by setting the function name to `withdrawNounsAndGrowTotalSupply` or something similar, as well as emitting events that indicate the new (and greater) total supply used by the DAO.
 
@@ -98,7 +98,7 @@ New functions:
   - allows the DAO to withdraw Nouns from the escrow contract, to the destination account.
   - only works once the forking period starts.
 - `adjustedTotalSupply`
-  - returns the total supply of Nouns minus nouns owned by the escrow contract and not part of an active fork ID.
+  - returns the total supply of Nouns minus Nouns in the treasury and minus Nouns owned by the escrow contract and not part of an active fork ID.
 
 New admin functions (can only be executed via proposals):
 
