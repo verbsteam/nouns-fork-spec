@@ -48,7 +48,7 @@
 
 - Token art is the same as the original Nouns, and forkers get to keep the same token IDs and same art per token.
 - Auction house is paused and can be resumed via a proposal; it then starts selling at the same ID the original auction was when the fork happened.
-- Founders reward remains active and sent to the Nounders account set in the original token.
+- Founders reward removed.
 
 ## Example stories
 
@@ -214,7 +214,7 @@ TLDR:
 
 - Made upgradable (fork DAOs can upgrade it such that it's no longer upgradable).
 - Supports minting / claiming tokens with the same ID and art as OG DAO.
-- Continues the founder reward sent to the Nounders account set in the original token.
+- No founder reward (can be added by upgrading the contract).
 - Uses the same descriptor and art contracts as the original token. The original DAO could change these contracts after the fork, in which case the fork DAO can pass proposals to use new descriptor and art contracts with the original data.
 
 New functions:
