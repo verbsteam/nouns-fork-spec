@@ -43,6 +43,7 @@
 
 - There's delayed governance, meaning proposals can't be created until all escrow forkers have claimed their new tokens, or until the delayed governance expiration timestamp has passed. The intention is to protect slow claimers from abuse by fast claimers.
 - There's vanilla ragequit, for reasons mentioned in the high level section.
+- The vetoer role and the veto function are removed; it can be added later through a contract upgrade if fork DAO token holders choose to do so.
 
 ### Token and Auction
 
@@ -183,6 +184,7 @@ TLDR:
 - Based on V1 (NounsDAOLogicV1).
 - Adds delayed governance.
 - Adds vanilla ragequit.
+- Removes the vetoer role and the veto function.
 - Upgradability changed from the old proxy design to the new UUPS pattern.
 - Includes [bug fixes from V2](https://nouns.wtf/vote/152):
   - Voting delay editing
@@ -203,6 +205,11 @@ New admin functions (can only be executed via proposals):
 
 - `_setErc20TokensToIncludeInSplit(erc20Addresses)`
   - sets the list of ERC20 tokens that will be transferred to fork DAOs.
+
+Removed function:
+
+- `veto(proposalId)`
+- `_setVetoer(newVetoer)`
 
 ### Timelock
 
