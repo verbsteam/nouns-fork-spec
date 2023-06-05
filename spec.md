@@ -29,7 +29,7 @@
 ### What happens with original Nouns that participate in a fork?
 
 - During the escrow period Nouns are held in the escrow contract.
-- During the forking period additional forking Nouns are also sent to the escrow contract; the motivation is to have a clean separation between fork-related Nouns and Nouns owned by the DAO for other reasons.
+- During the forking period additional forking Nouns are sent immediately to the original DAO's treasury.
 - Once the forking period is over, all Nouns that are in the escrow contract can be withdrawn by the original DAO via a proposal.
 - Nouns that are held in the treasury, or in the escrow after the forking period starts, are excluded from the total supply used in key DAO calculations: proposal threshold, quorum, fork funds calculation and fork threshold.
 - Any Noun that is then transferred out of the escrow, goes back into the above calculations, and it's important to recognize this as a non-intuitive consequence.
